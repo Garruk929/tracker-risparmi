@@ -12,6 +12,7 @@ const emptyMonths=()=>Array.from({length:12},()=>({salary:0,extras:[]}));
 const makeYear=from=>({percentages:from?{...from.percentages}:{essential:50,savings:30,wants:20},extrasToSavings:from?from.extrasToSavings:true,months:emptyMonths()});
 const currentYear=()=>Math.max(2026,new Date().getFullYear());
 const initialData=()=>({version:1,years:{[String(currentYear())]:makeYear()}});
+function restoreFromHash(){try{const m=location.hash.match(/^#restore=([A-Za-z0-9_-]+)$/);if(!m)return false;const b64=m[1].replace(/-/g,"+").replace(/_/g,"/");const pad=b64+"=".repeat((4-b64.length%4)%4);const bytes=Uint8Array.from(atob(pad),ch=>ch.charCodeAt(0));const json=new TextDecoder().decode(bytes);const x=JSON.parse(json);if(!x?.years||typeof x.years!=="object")throw new Error("invalid");localStorage.setItem(STORAGE_KEY,JSON.stringify(x));history.replaceState(null,"",location.pathname+location.search);return true}catch{history.replaceState(null,"",location.pathname+location.search);return false}}
 function safeLoad(){try{const x=JSON.parse(localStorage.getItem(STORAGE_KEY)||"null");if(!x?.years)return initialData();const years=Object.fromEntries(Object.entries(x.years).filter(([y])=>Number(y)>=2026));return {...x,years:Object.keys(years).length?years:{"2026":makeYear()}}}catch{return initialData()}}
 function calcMonth(y,m){const extra=m.extras.reduce((s,x)=>s+Number(x.amount||0),0),salary=Number(m.salary||0),total=salary+extra,basis=y.extrasToSavings?salary:total;return{salary,extra,total,essential:basis*y.percentages.essential/100,savings:basis*y.percentages.savings/100+(y.extrasToSavings?extra:0),wants:basis*y.percentages.wants/100}}
 function calcYear(y){return y.months.map(m=>calcMonth(y,m)).reduce((a,m)=>({salary:a.salary+m.salary,extra:a.extra+m.extra,total:a.total+m.total,essential:a.essential+m.essential,savings:a.savings+m.savings,wants:a.wants+m.wants}),{salary:0,extra:0,total:0,essential:0,savings:0,wants:0})}
@@ -19,7 +20,7 @@ const makeId=()=>crypto.randomUUID?.()||Math.random().toString(36).slice(2)+Date
 
 export default function App(){
  const now=new Date();
- const [data,setData]=useState(safeLoad);
+ const [data,setData]=useState(()=>{restoreFromHash();return safeLoad()});
  const [selectedYear,setSelectedYear]=useState(()=>{const y=String(currentYear());return data.years[y]?y:Object.keys(data.years).sort().at(-1)});
  const [monthIndex,setMonthIndex]=useState(now.getMonth());
  const [view,setView]=useState("home");
