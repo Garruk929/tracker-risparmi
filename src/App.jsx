@@ -54,7 +54,7 @@ export default function App(){
  const historyData=Object.keys(data.years).sort().map(y=>{const t=calcYear(data.years[y]);return{year:y,entrate:Math.round(t.total),risparmi:Math.round(t.savings)}}),historySavings=historyData.reduce((s,y)=>s+y.risparmi,0);
  const ThemeIcon=theme==="dark"?Moon:theme==="light"?Sun:SunMoon;
  return <div className="app">
-  <header className="header"><div><span className="kicker">TRACKER RISPARMI</span><h1>{view==="home"?"Questo mese":view==="year"?"Dashboard annuale":view==="history"?"Storico":"Impostazioni"}</h1></div>
+  <header className="header"><div><span className="kicker">TRACKER RISPARMI</span><h1>{view==="home"?"Questo mese":view==="year"?"Questo anno":view==="history"?"Storico":"Impostazioni"}</h1></div>
    <div className="headerActions"><div className="themeWrap"><button className="iconBtn themeBtn" onClick={()=>setThemeMenu(v=>!v)} aria-label="Tema"><ThemeIcon size={19}/></button>{themeMenu&&<div className="themeMenu">{[["light",Sun,"Chiaro"],["dark",Moon,"Scuro"],["auto",SunMoon,"Auto"]].map(([m,I,l])=><button key={m} className={theme===m?"themeChoice activeChoice":"themeChoice"} onClick={()=>{setTheme(m);setThemeMenu(false)}}><I size={16}/>{l}</button>)}</div>}</div>
    <div className="yearPicker"><button className="iconBtn" onClick={()=>moveYear(-1)} disabled={Number(selectedYear)<=2026}><ChevronLeft size={18}/></button><strong>{selectedYear}</strong><button className="iconBtn" onClick={()=>moveYear(1)}><ChevronRight size={18}/></button></div></div></header>
   <main className="main">
